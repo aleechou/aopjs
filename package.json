@@ -8,7 +8,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git://github.com/aleechou/aopjs.git"
+    "url": "git://github.com/aleechou/aopjs.git#0.1.0"
   },
   "author": "alee",
   "license": "MIT",
