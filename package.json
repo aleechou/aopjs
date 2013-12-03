@@ -16,6 +16,9 @@
     "url": "https://github.com/aleechou/aopjs/issues"
   },
   "homepage": "https://github.com/aleechou/aopjs",
+  "dependencies": {
+    "uglify-js2": "~2.1.11"
+  },
   "devDependencies": {
     "should": "*",
     "mocha": "*"
