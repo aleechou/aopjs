@@ -20,3 +20,20 @@ exports.ten = 10 ;
 exports.var_a = 123 ;
 exports.var_b = 123.123 ;
 exports.var_c = /^\d+$/ ;
+
+
+exports.fun_quux = function fun_quux(a){
+    a = (function(b){
+	return  b * 10 ;
+    }) (a) ;
+
+    a = (function(b){
+	return  b + 10  ;
+    }) (a) ;
+
+    return a ;
+}
+
+exports.thenumber = (function(){
+    return 14 ;
+}) () ;
