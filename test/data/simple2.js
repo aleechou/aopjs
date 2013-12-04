@@ -18,3 +18,5 @@ exports.fun_qux = function fun_qux(){
 exports.ten = 10 ;
 
 exports.var_a = 123 ;
+exports.var_b = 123.123 ;
+exports.var_c = /^\d+$/ ;
