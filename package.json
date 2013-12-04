@@ -6,6 +6,7 @@
   "scripts": {
     "test": "make test"
   },
+    "keywords": ["aop","nodejs","javascript"] ,
   "repository": {
     "type": "git",
     "url": "git://github.com/aleechou/aopjs.git#0.1.0"

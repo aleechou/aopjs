@@ -38,7 +38,7 @@ suite('AOP', function(){
 	var comparison = uglify.parse(
 	    function foo(a,b){
 		function bar(c,d){
-		    return __$aopjs__aops__[1].defunAdaptor(this,arguments,[0,1],function origin(c, d) {
+		    return __$aopjs__aops__[1].replacer(this,arguments,[0,1],function origin(c, d) {
 			return c+d ;
 		    }) ;
 		}
@@ -75,7 +75,6 @@ suite('AOP', function(){
 
 
     test('# AOP.for.function', function(done){
-	var filename = __dirname+"/data/simpile2.js" ;
 	var aop = require("../") ;
 
 	var idx = 0 ;
@@ -122,10 +121,29 @@ suite('AOP', function(){
 		(++idx).should.be.eql(9) ;
 	    }) ;
 
+	delete require.cache[__dirname+"/data/simple2.js"] ;
 	var simple2 = require("./data/simple2.js") ;
 	simple2.fun_foo(3,5).should.be.eql(12) ;
 
 	done() ;
     }) ;
 
+
+    test('# AOP.for.const', function(done){
+	var aop = require("../") ;
+
+	var pointcut = aop("./data/simple2.js").const("hello")
+	    .asPointcut()
+	    .add( aop("./data/simple2.js").defun("fun_qux").const("hello") ) ;
+
+	pointcut.getter(function(origin){
+	    return "Hello" ;
+	}) ;
+
+	delete require.cache[__dirname+"/data/simple2.js"] ;
+	var simple2 = require("./data/simple2.js") ;
+	simple2.fun_qux().should.be.eql("HelloHello") ;
+
+	done() ;
+    }) ;
 });

@@ -97,17 +97,12 @@ suite('joinpoints', function(){
 		if(node.value == "hello")
 		    astnode_e = node ;
 	    }
-	    
-//	    if(node instanceof uglify.AST_VarDef)
-//		debugger ;
 	}) ;
 	toplevel.walk(walker) ;
 
 	var joint_e = aop(filename).const("hello") ;
 
 	joint_e.match(astnode_e,toplevel).should.be.true ;
-	// ... ...
-
 
 	done() ;
     }) ;
