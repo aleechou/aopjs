@@ -17,3 +17,4 @@ exports.fun_qux = function fun_qux(){
 
 exports.ten = 10 ;
 
+exports.var_a = 123 ;

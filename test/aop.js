@@ -132,17 +132,25 @@ suite('AOP', function(){
     test('# AOP.for.const', function(done){
 	var aop = require("../") ;
 
-	var pointcut = aop("./data/simple2.js").const("hello")
+	// 2 string
+	aop("./data/simple2.js").const("hello")
 	    .asPointcut()
-	    .add( aop("./data/simple2.js").defun("fun_qux").const("hello") ) ;
+	    .add( aop("./data/simple2.js").defun("fun_qux").const("hello") )
+	    .getter(function(origin){
+		return "Hello" ;
+	    }) ;
 
-	pointcut.getter(function(origin){
-	    return "Hello" ;
-	}) ;
+	// 1 int
+	aop("./data/simple2.js").const(123)
+	    .getter(function(origin){
+		return origin + 321 ;
+	    }) ;
 
 	delete require.cache[__dirname+"/data/simple2.js"] ;
 	var simple2 = require("./data/simple2.js") ;
+
 	simple2.fun_qux().should.be.eql("HelloHello") ;
+	simple2.var_a.should.be.eql(444) ;
 
 	done() ;
     }) ;
