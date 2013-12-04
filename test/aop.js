@@ -132,7 +132,7 @@ suite('AOP', function(){
     test('# AOP.for.const', function(done){
 	var aop = require("../") ;
 
-	// 2 string
+	// string
 	aop("./data/simple2.js").const("hello")
 	    .asPointcut()
 	    .add( aop("./data/simple2.js").defun("fun_qux").const("hello") )
@@ -140,10 +140,24 @@ suite('AOP', function(){
 		return "Hello" ;
 	    }) ;
 
-	// 1 int
+	// int
 	aop("./data/simple2.js").const(123)
 	    .getter(function(origin){
 		return origin + 321 ;
+	    }) ;
+
+	// float
+	aop("./data/simple2.js").const(123.123)
+	    .getter(function(origin){
+		return origin + 321.321 ;
+	    }) ;
+
+	// bool
+
+	// regexp
+	aop("./data/simple2.js").regexp(/^\d+$/)
+	    .getter(function(origin){
+		return /^[a-z]+$/i ;
 	    }) ;
 
 	delete require.cache[__dirname+"/data/simple2.js"] ;
@@ -151,6 +165,8 @@ suite('AOP', function(){
 
 	simple2.fun_qux().should.be.eql("HelloHello") ;
 	simple2.var_a.should.be.eql(444) ;
+	simple2.var_b.should.be.eql(444.444) ;
+	simple2.var_c.should.be.eql(/^[a-z]+$/i) ;
 
 	done() ;
     }) ;
