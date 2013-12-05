@@ -37,3 +37,12 @@ exports.fun_quux = function fun_quux(a){
 exports.thenumber = (function(){
     return 14 ;
 }) () ;
+
+
+exports.var_foo = 100 ;
+exports.var_bar = 100 ;
+exports.var_baz = 100 ;
+
+exports.str_foo = "hello" ;
+exports.str_bar = "hello" ;
+exports.str_baz = "hello" ;
