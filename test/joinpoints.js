@@ -107,5 +107,28 @@ suite('joinpoints', function(){
 	done() ;
     }) ;
 
+    test("# Joint match position", function(done){	
+	var aop = require("../") ;
+
+	var scope = aop("./data/simple2.js") ;
+	scope.const(100).getter(function(origin){
+	    return origin + 5 ;
+	}) ;
+	scope.const(100,1).getter(function(origin){
+	    return origin + 10 ;
+	}) ;
+	scope.const(100,2).getter(function(origin){
+	    return origin + 15 ;
+	}) ;
+
+	delete require.cache[__dirname+"/data/simple2.js"] ;
+	var simple2 = require("./data/simple2.js") ;
+	simple2.var_foo.should.be.eql(105) ;
+	simple2.var_bar.should.be.eql(110) ;
+	simple2.var_baz.should.be.eql(115) ;
+
+	done() ;
+    }) ;
+
 });
 

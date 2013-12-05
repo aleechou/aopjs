@@ -1,4 +1,8 @@
 
+0.1.2 2013.12.5
+==================
+* implements position of const joint
+
 0.1.2 2013.12.4
 ==================
 * support anonymous function joinpoint 
