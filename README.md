@@ -24,7 +24,7 @@ $ npm i aopjs
 $ npm i aopjs -d
 $ make test
 ./node_modules/.bin/mocha \
-    	--reporter list \
+        --reporter list \
 		--timeout 1000 \
 		-u tdd \
 		test/*.js
@@ -87,21 +87,42 @@ console.log( foo("world") ) ;
 hello you
 ```
 
+---
+
 ## 概念
 
 > AOP = Aspect Oriented Programming （面向切面编程）
 
-0. 将系统里的代码定义为连接点(`joinpoint`/`joint`)，aopjs 目前支持的 `joinpoint` 仅为：函数定义(before/around/after)，常量(getter)，变量(setter/getter)
+0. #### 连接点 Joinpoint ####
 
-1. 按特性找到连接点(`joinpoint`)，将有用的`joinpoint`集合在一起，形成切入点(`pointcut`)
+    Joinpoint 可以理解为代码中要切入的地方，aopjs 实现了函数定义(before/after/aroud)，常量的访问(getter)，变量的访问(setter/getter)，等类型的连接点，可以通过 defun()、const()、var() 等函数定义连接点。
 
-3. 对切入点(`pointcut`)进行函数切入(`cut`)操作，被切入到`pointcut`上的函数称为“方面”(`adive`)；aopjs目前实现的advice类型有：before，around，after，setter，getter
+1. #### 切入点 Pointcut ####
+
+    切入点(Pointcut)实际上是多个连接点(Joinpoint)的集合，需要切入的代码并不是直接对连接点(Joinpoint)进行操作，而是将连接点聚合成一个切入点，对切入点进行切入操作。
+
+2. #### 通知 Advice ####
+
+    通知(Advice)是要切入的代码，aopjs中是一个闭包函数，闭包变量在其定义的上下文，而不是被切入的代码的上下文。aopjs实现的了以下类型的 advice ：before/after/aroud/getter/setter 。
 
 
+### aopjs的基本操作是：###
+
+0. 首先调用 aop() 函数，aop()的参数为一个或多个路径模板，用来匹配目标文件；
+
+1. 在aop()返回的对象上调用 defun(), const() 等函数定义对应文件内的 joinpoint
+
+2. 在 joinpoint对象上调用 asPointcut() 函数创建一个包含该 joinpoint 的 pointcut对象，然后可以向 pointcut对象添加更多 joinpoint对象；
+    > 如果只需要一个 joinpoint，可以直接在 joinpoint 对像上调用 before等 advice 切入函数。
+
+3. 在 pointcut 对象上调用 before() 等函数，切入你的advice函数
+
+---
 
 # API
 
 ## 文件路径模板
+
 
 aopjs用`文件路径模板`来匹配目标文件：
 
@@ -254,13 +275,118 @@ aop("/some/file/path").const(/^hello/,1) ;
 aop("/some/file/path").defun("PI").const(3.14125) ;
 ```
 
+### RegExp常量 regexp() ###
 
-### RegExp常量 regexp()
+RegExp常量和普通常量类似，参数是一个和目标RegExp常量一致的正则表达式。
 
+```javascript
+aop("/some/file/path").regexp(/^\d+$/).getter(function(origin){
+    return /^\w+$/ ;
+}) ;
+```
 
 ## 切入点（Pointcut）
 
+### 创建创建切入点：
+
+* 在Joinpoint对象上调用 asPointcut() 
+
+    ```javascript
+    var pointcut = aop("/some/path").defun("foo").asPointcut() ;
+    ```
+
+* 在Joinpoint对象上调用 before() 等函数，直接切入advice，并返回自动创建的 pointcut 对象
+
+    ```javascript
+    var pointcut = aop("/some/path")
+        .defun("foo")
+        .before(function(){
+            // todo ... ...
+        }) ;
+    
+    // 另一个 advice
+    pointcut.around(function(){
+        // todo
+    }) ;
+    ```
+
+### Pointcut.add() 聚合多个 Joinpoint
+
+下面这个例子向多个 controller 类的 process 方法切入了一个advice函数，该advice函数负责在controller执行前记录日志。
+
+```javascript
+aop("/some/folder/constrollers/*.js")
+    .defun("process")
+    .asPointcut() 
+    // 聚合更多 joinpoint
+    add(
+        aop("/some/other/folder/bar/controllers/*.js").defun("process")
+        , aop("/some/other/folder/baz/constrollers/*/.js").defun("process")
+    )
+    .add(
+        aop("/some/other/folder/qux/controllers/*.js").defun("process")
+    )
+    // 切入
+    around(function(){
+        // 为controller们记录日志
+        log("... ...") ;
+        
+        // 调用controller
+        return arguments.callee.origin.apply(this,arguments) ;
+    }) ;
+```
+
 ## Advice
+
+aopjs实现了以下类型的advice函数：
+
+* #### before()
+
+    切入到函数定义的开始位置，参数和被切入的函数一致，不需要返回值；切入多个 before类型的advice时，调用顺序和切入顺序一致。
+
+* #### after()
+
+    切入到函数定义的结束位置，其余行为和 before() 一致
+
+* #### around()
+    
+    * around 函数“包裹”到目标函数的外部，先调用“外层”的advice函数，由advice函数决定是否调用以及何时调用“内层”的函数；
+    * 在同一个目标函数上多次切入 around 函数时，这些 around 函数的调用顺序和切入顺序___相反___，总是从外层向内层调用；后“切入”的“包裹”在最外层，从而最先调用；最内层的是作为目标的原始函数；
+    > 整个around 就像一个洋葱一样，每层洋葱皮都是一个切入到目标函数的 around advice
+    * 在 around 函数内使用 arguments.callee.origin() 来进一步调用“内层函数”，around  的返回值作为“本层”调用的返回值。
+
+    > 可以用 around 替换目标函数，影响目标函数接收的参数或返回值。
+
+* #### getter(origin)
+
+    * 可对常量或变量类型的 joinpoint 进行 getter 切入，当目标被访问时，调用getter函数，由 getter 函数的返回值决定目标的值
+    
+    * 对于同一 joinpoint ，只有最后一次 getter 函数有效
+    
+    * getter() 函数接收到参数 origin 为目标的原始值；getter()函数的返回值，为运行时访问目标常量或变量的值
+
+* #### setter(origin)
+
+    * 和getter类似，为目标变量赋值时触发，传给setter函数的参数origin为本应设置给变量的值。
+    * setter() 函数的返回值将作为赋值语句的值
 
 ## “坑”
 
+以下是一些使用 aopjs 常会遇到的问题：
+
+* 对于一个文件的切入操作，必须在require目标文件之前，如果切入操作无效，首先检查检查文件路径和joinpoint的匹配是否准确；然后，检查目标文件是否在切入操作执行前已经被require()了。
+    
+    例如以下情况是无效的，因为目标文件在执行 before()切入操作之前已经被加载了：
+
+    ```javascript
+    var aop = require("aopjs") ;
+    var somefileexports = require("/some/file/path.js") ;
+
+    aop("/some/file/path.js").defun("foo").before(function(){
+        // something todo ...
+    }) ;
+    ```
+    
+    在这种情况下，系统会有任何错误提示，但before函数不会生效
+
+* ... ...
