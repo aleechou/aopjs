@@ -264,3 +264,7 @@ aop("/some/file/path").defun("PI").const(3.14125) ;
 
 ## “坑”
 
+
+
+[![Bitdeli Badge](https://d2weczhvl823v0.cloudfront.net/aleechou/aopjs/trend.png)](https://bitdeli.com/free "Bitdeli Badge")
+
