@@ -38,9 +38,11 @@ suite('AOP', function(){
 	var comparison = uglify.parse(
 	    function foo(a,b){
 		function bar(c,d){
-		    return __$aopjs__aops__[1].replacer(this,arguments,[0,1],function origin(c, d) {
+		    var __lambdas = {};
+		    var __returnValue = __$aopjs__aops__[1].replacer(this,arguments,__lambdas,[0,1],function origin(c, d) {
 			return c+d ;
 		    }) ;
+		    return __returnValue ;
 		}
 		return bar(a,b) ;
 	    }.toString() 
@@ -51,6 +53,36 @@ suite('AOP', function(){
 	done() ;
     });
 
+    test('# AOP.for tdd', function(done){
+	done() ;
+    });
+
+    test('# AOP.lambdas', function(done){
+	
+	var aop = AOP.createCallableInstance() ;
+	var src = function foo(a,b){
+	    var a = 1 ;
+	    function bar(c,d){
+		return c+d ;
+	    }
+	    return bar(a,b) ;
+	}.toString() ;
+
+	aop("./data/*.js")
+	    .defun("foo")
+	    .after(['b'],function(){
+		console.log(arguments.callee.lambdas) ;
+	    })
+	    .after(['b'],function(){
+		console.log(arguments.callee.lambdas) ;
+	    })
+	var compiled = aop.compile(src,__dirname+"/data/simple.js") ;
+
+	console.log(compiled) ;
+
+	done() ;
+
+    }) ;
 
     test('# AOP.createAdvisor', function(done){
 
